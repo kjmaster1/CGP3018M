@@ -1,6 +1,9 @@
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>
+#include <chrono>
+using namespace std;
+using namespace std::chrono;
 
 //include shape, shader header files
 #include "Triangle.h"
@@ -30,6 +33,9 @@
 
 
 int main(int argc, char *argv[]) {
+
+	high_resolution_clock::time_point t1 = high_resolution_clock::now();
+
 	//SDL Initialise
 	SDL_Init(SDL_INIT_EVERYTHING);
 
@@ -57,7 +63,25 @@ int main(int argc, char *argv[]) {
 	//*****************************************************
 	//OpenGL specific data
 	//create objects
-	Triangle tri;
+	//define vertices for the triangle
+	GLfloat vertices[9] = {
+		//-0.5f, -0.5f, 0.0f,	
+		//-0.5f,  0.5f, 0.0f,	
+		//0.0f, 0.0f, 0.0f
+		0.5f, 0.5f, 0.0f,
+		0.5f, -0.5f, 0.0f,
+		0.0f, 0.0f, 0.0f
+
+	};
+
+	GLfloat vertices2[9] = {
+		-0.9f, -0.9f, 0.0f,
+		-0.9f,  0.9f, 0.0f,
+		0.0f, 0.0f, 0.0f
+	};
+
+	Triangle tri(vertices);
+	Triangle tri2(vertices2);
 
 	//create shaders
 	Shader vSh("..//..//Assets//Shaders//shader.vert");
@@ -84,21 +108,30 @@ int main(int argc, char *argv[]) {
 	//OpenGL buffers
 	//set buffers for the triangle
 	tri.setBuffers();
+	tri2.setBuffers();
 
 	//***********************************************
 
 	SDL_Event event;
 	bool windowOpen = true;
+	float color[3] = { 0.0f, 0.0f, 0.0f };
 
 	//*****************************
 	//'game' loop
 	while (windowOpen)
 	{
 
+		GLint loc = glGetUniformLocation(shaderProgram, "uTime");
+		if (loc != -1) {
+			high_resolution_clock::time_point t2 = high_resolution_clock::now();
+			duration<float, std::milli> time_span = t2 - t1;
+			glUniform1f(loc, time_span.count());
+		}
+
 		//****************************
 		// OpenGL calls.
-		
-		glClearColor(1.0f, 0.0f, 0.0f, 1);
+
+		glClearColor(color[0], color[1], color[2], 1);
 		glClear(GL_COLOR_BUFFER_BIT); 
 
 		//draw the triangles
@@ -109,6 +142,10 @@ int main(int argc, char *argv[]) {
 		//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		
 		glDrawArrays(GL_TRIANGLES, 0, 3);
+
+		glBindVertexArray(tri2.VAO);
+
+		glDrawArrays(GL_TRIANGLES, 0, 3);
 		//unbind (release) the VAO
 		glBindVertexArray(0);
 
@@ -118,20 +155,48 @@ int main(int argc, char *argv[]) {
 		//*****************************
 		//SDL handled input
 		//Any input to the program is done here
-
-		while (windowOpen)
+		if (SDL_PollEvent(&event))
 		{
-			if (SDL_PollEvent(&event))
+			if (event.type == SDL_QUIT)
 			{
-				if (event.type == SDL_QUIT)
-				{
+				windowOpen = false;
+			}
+			if (event.type == SDL_KEYDOWN)
+			{
+				switch (event.key.keysym.sym) {
+
+				case SDLK_c:
 					windowOpen = false;
+					break;
+
+				case SDLK_1:
+					color[0] = 1.0f;
+					color[1] = 0.0f;
+					color[2] = 0.0f;
+					break;
+
+				case SDLK_2:
+					color[0] = 0.0f;
+					color[1] = 1.0f;
+					color[2] = 0.0f;
+					break;
+
+				case SDLK_3:
+					color[0] = 0.0f;
+					color[1] = 0.0f;
+					color[2] = 1.0f;
+					break;
+
+				case SDLK_4:
+					color[0] = 0.0f;
+					color[1] = 0.0f;
+					color[2] = 0.0f;
+					break;
 				}
 			}
 		}
-
 	}
-	//****************************
+	//***1*************************
 	// Once finished with OpenGL functions, the SDL_GLContext can be deleted.
 	SDL_GL_DeleteContext(glcontext);
 

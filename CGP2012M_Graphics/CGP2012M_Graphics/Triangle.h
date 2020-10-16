@@ -9,17 +9,15 @@ public:
 	
 
 	//constructor
-	Triangle()
+	Triangle(GLfloat *vertices)
 	{
+		for (int i = 0; i < 9; i++) {
+			verts[i] = vertices[i];
+		}
 	}
 
 	//define vertices for the triangle
-	GLfloat vertices[9] = {
-		-0.5f, -0.5f, 0.0f,	
-		-0.5f,  0.5f, 0.0f,	
-		0.0f, 0.0f, 0.0f
-
-	};
+	GLfloat verts[9];
 
 	 
 	
@@ -41,7 +39,7 @@ public:
 		glBindVertexArray(VAO);
 		// Copy our vertices array in a buffer for OpenGL to use
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(verts), verts, GL_STATIC_DRAW);
 		// Then set our vertex attributes pointers
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0);
 		glEnableVertexAttribArray(0);
